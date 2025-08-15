@@ -88,7 +88,7 @@ const user = ref({
   avatar: 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
 })
 
-// 收藏夹数量
+// 收藏夹数量设为12
 const favoritesCount = ref(12)
 
 // 搜索跳转函数
