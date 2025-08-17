@@ -12,40 +12,40 @@
 //  * @date: 2024-01-05
 //  */
 // @Data
-// public class User implements Serializable {
+ public class User implements Serializable {
 
-//     private static final long serialVersionUID = 1L;
+     private static final long serialVersionUID = 1L;
 
-//     /**
+
 //      * 自增主键
 //      */
-//     private Long id;
+     private Long id;
 
 //     /**
 //      * 账号（手机号）
 //      */
-//     private String accountNumber;
+     private String accountNumber;
 
 //     /**
 //      * 登录密码
 //      */
-//     private String userPassword;
+     private String userPassword;
 
 //     /**
 //      * 昵称
 //      */
-//     private String nickname;
+     private String nickname;
 
 //     /**
 //      * 头像
 //      */
-//     private String avatar;
+     private String avatar;
 
 //     /**
 //      * 注册时间
 //      */
-//     private Date signInTime;
+     private Date signInTime;
 
-//     private Byte userStatus;
+     private Byte userStatus;
 
 // }
