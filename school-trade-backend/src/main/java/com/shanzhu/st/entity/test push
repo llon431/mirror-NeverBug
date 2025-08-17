@@ -82,8 +82,8 @@ public class UserController {
     @RequestMapping("logout")
     public R logout(
             @CookieValue("shUserId")
-            @NotNull(message = "登录异常 请重新登录")
-            @NotEmpty(message = "登录异常 请重新登录") String shUserId, HttpServletResponse response
+            @NotNull(message = "Login error, please log in again")
+            @NotEmpty(message = "Login error, please log in again") String shUserId, HttpServletResponse response
     ) {
         Cookie cookie = new Cookie("shUserId", shUserId);
         cookie.setMaxAge(0);
@@ -101,8 +101,8 @@ public class UserController {
      */
     @GetMapping("info")
     public R getOneUser(
-            @CookieValue("shUserId") @NotNull(message = "登录异常 请重新登录")
-            @NotEmpty(message = "登录异常 请重新登录")
+            @CookieValue("shUserId") @NotNull(message = "Login error, please log in again")
+            @NotEmpty(message = "Login error, please log in again")
             String id
     ) {
         return R.success(userService.getUser(Long.valueOf(id)));
@@ -116,8 +116,8 @@ public class UserController {
      * @return 修改结果
      */
     @PostMapping("/info")
-    public R updateUserPublicInfo(@CookieValue("shUserId") @NotNull(message = "登录异常 请重新登录")
-                                  @NotEmpty(message = "登录异常 请重新登录")
+    public R updateUserPublicInfo(@CookieValue("shUserId") @NotNull(message = "Login error, please log in again")
+                                  @NotEmpty(message = "Login error, please log in again")
                                   String id, @RequestBody User user) {
         user.setId(Long.valueOf(id));
         if (userService.updateUserInfo(user)) {
@@ -137,8 +137,8 @@ public class UserController {
      */
     @GetMapping("/password")
     public R updateUserPassword(
-            @CookieValue("shUserId") @NotNull(message = "登录异常 请重新登录")
-            @NotEmpty(message = "登录异常 请重新登录") String id,
+            @CookieValue("shUserId") @NotNull(message = "Login error, please log in again")
+            @NotEmpty(message = "Login error, please log in again") String id,
             @RequestParam("oldPassword") @NotEmpty @NotNull String oldPassword,
             @RequestParam("newPassword") @NotEmpty @NotNull String newPassword) {
         if (userService.updatePassword(newPassword, oldPassword, Long.valueOf(id))
