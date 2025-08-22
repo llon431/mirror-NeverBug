@@ -29,7 +29,7 @@
     <!-- you may like -->
     <section class = "recommend-cards">
       <h3 class="sec-title">You may Like</h3>
-      <div class = "card-row"> 
+      <div class = "card-row">
         <article v-for =  "p in cards" :key = "p.id" class = "card">
           <div class = "card-inner">
             <button class = "fav" :aria-label="p.liked ? 'unlike' : 'like'" @click="toggleFav(p)">
@@ -40,7 +40,7 @@
           </div>
           <div class = "price">{{ p.price }}</div>
           <div class = "name">{{ p.name }}</div>
-          </div>   
+          </div>
         </article>
       </div>
     </section>
@@ -52,41 +52,80 @@
   </div>
 </template>
 
+
+
 <script setup>
-import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+// import { useRouter } from 'vue-router' // 目前未使用可先移除
+// const router = useRouter()
 
-const router = useRouter()
+const cards = ref([])
+const total = ref(0)
+const page = ref(1)
+const pageSize = ref(8)
+const loading = ref(false)
+const errorMsg = ref('')
 
-// Cats：使用 public 下的圖片
+function mapItemToCard(item) {
+  return {
+    id: item.id,
+    name: item.title,
+    img: item.coverUrl || 'https://via.placeholder.com/400x300?text=No+Image',
+    price: item.price != null ? `$${Number(item.price).toFixed(2)}` : 'N/A',
+    liked: false,
+  }
+}
+
+async function fetchCards(append = false) {
+  loading.value = true
+  errorMsg.value = ''
+  try {
+    const res = await fetch(`/api/items/homepage?page=${page.value}&pageSize=${pageSize.value}`)
+    const json = await res.json()
+    if (json.code === 200 && json.data) {
+      const list = (json.data.items || []).map(mapItemToCard)
+      total.value = json.data.total ?? 0
+      cards.value = append ? cards.value.concat(list) : list
+    } else {
+      errorMsg.value = json.msg || 'Load failed'
+      if (!append) cards.value = []
+    }
+  } catch (e) {
+    errorMsg.value = String(e)
+    if (!append) cards.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+function toggleFav(p) {
+  p.liked = !p.liked
+}
+
+function loadMore() {
+  if (cards.value.length >= total.value || loading.value) return
+  page.value += 1
+  fetchCards(true)
+}
+
+// 類別資料（public/ 下的圖片）
 const cats = [
   { key: 'univ',   label: 'university', img: '/university.png' },
   { key: 'tech',   label: 'tech',       img: '/tech.png' },
   { key: 'clothes',label: 'clothes',    img: '/clothes.png' },
   { key: 'sports', label: 'sports',     img: '/sports.png' },
   { key: 'living', label: 'living',     img: '/living.png' },
-  { key: 'other',  label: 'others',      img: '/others.png' },
+  { key: 'other',  label: 'others',     img: '/others.png' },
 ]
 
 function goCategory(c) {
-  // 之後改成實際路由
   console.log('go category:', c)
+  // 之後可用 router.push(...)
 }
 
-// "you may like" 卡片数据（占位）
-const cards = reactive([
-  { id: 1, name: 'Product 1', price: '$10', img:'/1.jpg', liked: false },
-  { id: 2, name: 'Product 2', price: '$20', img:'/2.jpg',liked: false },
-  { id: 3, name: 'Product 3', price: '$30', img:'/3.jpg',liked: false },
-  { id: 4, name: 'Product 4', price: '$40', img:'/1.jpg',liked: false },
-  { id: 5, name: 'Product 5', price: '$50', img:'/2.jpg',liked: false },
-  { id: 6, name: 'Product 6', price: '$60', img:'/3.jpg',liked: false },
-])
-
-function toggleFav(p) {
-  p.liked = !p.liked
-}
+onMounted(fetchCards)
 </script>
+
 
 <style scoped>
 /* 推薦連結列（搜尋下面） */

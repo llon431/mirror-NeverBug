@@ -15,4 +15,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    proxy: {
+      // 只要前端請求以 /api 開頭，就會自動轉發到 Spring Boot
+      '/api': {
+        target: 'http://localhost:8080',  // 你的 Spring Boot 後端端口
+        changeOrigin: true,               // 避免 CORS 問題
+      }
+    }
+  }
 })
