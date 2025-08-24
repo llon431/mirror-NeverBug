@@ -13,14 +13,31 @@
         v-for="c in cats"
         :key="c.key"
         class="cat-btn"
-        @click="goCategory(c)"
+        @click="selectCat(c.key)"
+        :class="{ active: c.key === selectedCatKey }"
       >
-        <span class="cat-icon">
-          <img :src="c.img" :alt="c.label" />
-        </span>
+    <span class="cat-icon">
+      <img :src="c.img" :alt="c.label" />
+    </span>
         <span class="cat-text">{{ c.label }}</span>
       </button>
     </section>
+
+    <!-- 子分類面板（點了上面的分類才會出現） -->
+    <transition name="fade-slide">
+      <div v-if="selectedCatKey" class="cat-panel">
+        <h3 class="panel-title">{{ currentCatLabel }}</h3>
+
+        <ul class="subcat-grid">
+          <li v-for="s in subcats[selectedCatKey]" :key="s.text" class="subcat-item">
+            <!-- 你可以用 router，也可以用 a 連到你的頁面 -->
+            <a @click.prevent="goSubcat(s)" href="#">
+              {{ s.text }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </transition>
 
     <!-- 下方保留你的首頁其他內容 -->
     <h2 style="margin: 20px 0 8px;">University</h2>
@@ -55,9 +72,7 @@
 
 
 <script setup>
-import { ref, onMounted } from 'vue'
-// import { useRouter } from 'vue-router' // 目前未使用可先移除
-// const router = useRouter()
+import { ref, onMounted, computed } from 'vue'
 
 const cards = ref([])
 const total = ref(0)
@@ -108,7 +123,7 @@ function loadMore() {
   fetchCards(true)
 }
 
-// 類別資料（public/ 下的圖片）
+/** 類別（沿用你原本的 cats） */
 const cats = [
   { key: 'univ',   label: 'university', img: '/university.png' },
   { key: 'tech',   label: 'tech',       img: '/tech.png' },
@@ -118,13 +133,67 @@ const cats = [
   { key: 'other',  label: 'others',     img: '/others.png' },
 ]
 
+/** 點擊分類 → 展開子分類 */
+const selectedCatKey = ref(null)
+
+const subcats = {
+  univ: [
+    { text: 'Law School', href: '/univ/law' },
+    { text: 'Business School', href: '/univ/business' },
+    { text: 'Engineering and Design', href: '/univ/eng' },
+    { text: 'Medical & Health Sciences', href: '/univ/med' },
+    { text: 'Science', href: '/univ/science' },
+    { text: 'Bioengineering Institute', href: '/univ/bio' },
+    { text: 'Research Institutes & Centres', href: '/univ/research' },
+    { text: 'Arts and Education', href: '/univ/arts' },
+  ],
+  tech: [
+    { text: 'Laptops', href: '/tech/laptops' },
+    { text: 'Phones', href: '/tech/phones' },
+    { text: 'Accessories', href: '/tech/accessories' },
+  ],
+  clothes: [
+    { text: 'Jackets', href: '/clothes/jackets' },
+    { text: 'Shoes', href: '/clothes/shoes' },
+    { text: 'Accessories', href: '/clothes/accessories' },
+  ],
+  sports: [
+    { text: 'Basketball', href: '/sports/basketball' },
+    { text: 'Badminton', href: '/sports/badminton' },
+    { text: 'Fitness', href: '/sports/fitness' },
+  ],
+  living: [
+    { text: 'Furniture', href: '/living/furniture' },
+    { text: 'Kitchen', href: '/living/kitchen' },
+    { text: 'Decor', href: '/living/decor' },
+  ],
+  other: [
+    { text: 'Coupons', href: '/other/coupons' },
+    { text: 'Services', href: '/other/services' },
+    { text: 'Freebies', href: '/other/freebies' },
+  ],
+}
+
+const currentCat = computed(() => cats.find(c => c.key === selectedCatKey.value) || null)
+const currentSubcats = computed(() => subcats[selectedCatKey.value] ?? [])
+const currentCatLabel = computed(() => currentCat.value ? (currentCat.value.label.charAt(0).toUpperCase() + currentCat.value.label.slice(1)) : '')
+
+function selectCat(key) {
+  selectedCatKey.value = (selectedCatKey.value === key) ? null : key
+}
+
+function goSubcat(s) {
+  // 若有 vue-router：import { useRouter } from 'vue-router'；router.push(s.href)
+  if (s?.href) window.location.href = s.href
+}
+
 function goCategory(c) {
   console.log('go category:', c)
-  // 之後可用 router.push(...)
 }
 
 onMounted(fetchCards)
 </script>
+
 
 
 <style scoped>
@@ -210,5 +279,14 @@ onMounted(fetchCards)
   display: flex; align-items: center;
   box-shadow: 0 3px 8px rgba(0,0,0,.25);
 }
+
+.cat-btn.active { outline: 2px solid #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.25); }
+.cat-panel { margin-top:16px; background:#0d1240; color:#fff; border-radius:12px; padding:16px 20px; }
+.panel-title { font-weight:700; margin-bottom:12px; }
+.subcat-grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px 32px; list-style:none; padding:0; margin:0; }
+.subcat-item a { color:#fff; text-decoration:none; }
+.subcat-item a:hover { text-decoration:underline; }
+.fade-slide-enter-active,.fade-slide-leave-active { transition: all .18s ease; }
+.fade-slide-enter-from,.fade-slide-leave-to { opacity:0; transform: translateY(-6px); }
 
 </style>
