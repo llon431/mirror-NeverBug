@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bag2bag.st.mapper.ItemMapper">
+
+    <!-- resultMap 對應 Item 實體 -->
+    <resultMap id="ItemMap" type="com.bag2bag.st.entity.Item">
+        <id     column="id"            property="id"/>
+        <result column="owner_id"      property="ownerId"/>
+        <result column="title"         property="title"/>
+        <result column="description"   property="description"/>
+        <result column="category_id"   property="categoryId"/>
+
+        <!-- Enum 映射 -->
+        <result column="condition"        property="condition"
+                javaType="com.bag2bag.st.enums.ItemsCondition"/>
+        <result column="transaction_type" property="transactionType"
+                javaType="com.bag2bag.st.enums.TransactionType"/>
+        <result column="status"           property="status"
+                javaType="com.bag2bag.st.enums.ItemsStatus"/>
+
+        <result column="price"          property="price"/>
+        <result column="original_price" property="originalPrice"/>
+        <result column="expected_price" property="expectedPrice"/>
+        <result column="bought_date"    property="boughtDate"/>
+        <result column="updated_at"       property="updatedAt"/>
+        <result column="created_at"     property="createdAt"/>
+
+        <!-- 封面圖，只有在特定查詢 SELECT 出 cover_url 時才有值 -->
+        <result column="cover_url"      property="coverUrl"/>
+    </resultMap>
+
+    <!-- 基本欄位（只包含 items 表自身的欄位） -->
+    <sql id="Base_Column_List">
+        id, owner_id, title, description, category_id,
+        `condition`, transaction_type,
+        price, original_price, expected_price,
+        bought_date, `status`,
+        created_at, updated_at
+    </sql>
+
+    <!-- 例子：查全部（不帶 cover_url） -->
+    <select id="getAllItem" resultMap="ItemMap">
+        SELECT <include refid="Base_Column_List"/>
+        FROM items
+    </select>
+
+    <!-- 🔥 首頁查詢：只取 active 商品 + 封面圖 -->
+    <select id="selectActiveForHomepage" resultMap="ItemMap">
+        SELECT
+            i.id,
+            i.owner_id,
+            i.title,
+            i.description,
+            i.category_id,
+            i.`condition`,
+            i.transaction_type,
+            i.price,
+            i.original_price,
+            i.expected_price,
+            i.bought_date,
+            i.`status`,
+            i.created_at,
+            i.updated_at,
+            (
+                SELECT p.url
+                FROM item_photos p
+                WHERE p.item_id = i.id
+                ORDER BY p.sort_order ASC, p.id ASC
+                LIMIT 1
+            ) AS cover_url
+        FROM items i
+        WHERE i.`status` = 'active'
+        ORDER BY i.created_at DESC
+            LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <!-- 統計 active 商品總數 -->
+    <select id="countActive" resultType="int">
+        SELECT COUNT(*) FROM items WHERE `status` = 'active'
+    </select>
+
+</mapper>
